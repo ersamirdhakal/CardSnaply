@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation Checklist</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #ccc;
+        }
+        .test-item.pass {
+            border-left-color: #10b981;
+        }
+        .test-item.fail {
+            border-left-color: #ef4444;
+        }
+        .test-item.pending {
+            border-left-color: #f59e0b;
+        }
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .test-details {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+        .status.pass { background: #d1fae5; color: #065f46; }
+        .status.fail { background: #fee2e2; color: #991b1b; }
+        .status.pending { background: #fef3c7; color: #92400e; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Validation Checklist</h1>
+    <p>Run this validation checklist to verify all features work correctly.</p>
+    
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="clearResults()">Clear Results</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const tests = [
+            {
+                id: 'tesseract-v4',
+                title: '1. Tesseract.js v4 Check',
+                test: () => {
+                    const scripts = Array.from(document.querySelectorAll('script[src]'));
+                    const tesseractScript = scripts.find(s => s.src.includes('tesseract.js@4'));
+                    return {
+                        pass: !!tesseractScript,
+                        details: tesseractScript 
+                            ? `Found: ${tesseractScript.src}` 
+                            : 'Tesseract.js v4 not found in script tags'
+                    };
+                }
+            },
+            {
+                id: 'theme-persistence',
+                title: '2. Dark Mode Persistence Check',
+                test: () => {
+                    const theme = localStorage.getItem('theme');
+                    const hasDarkClass = document.documentElement.classList.contains('dark');
+                    const themeToggle = document.getElementById('themeToggle');
+                    
+                    return {
+                        pass: true,
+                        details: `Theme: ${theme || 'none'}, Dark class: ${hasDarkClass}, Toggle exists: ${!!themeToggle}`
+                    };
+                }
+            },
+            {
+                id: 'indexeddb-setup',
+                title: '3. IndexedDB Setup Check',
+                test: async () => {
+                    try {
+                        if (typeof contactManager !== 'undefined') {
+                            await contactManager.init();
+                            const contacts = await contactManager.getAllContacts();
+                            return {
+                                pass: true,
+                                details: `IndexedDB initialized. Contacts: ${contacts.length}`
+                            };
+                        }
+                        return {
+                            pass: false,
+                            details: 'contactManager not found'
+                        };
+                    } catch (error) {
+                        return {
+                            pass: false,
+                            details: `Error: ${error.message}`
+                        };
+                    }
+                }
+            },
+            {
+                id: 'service-worker',
+                title: '4. Service Worker Check',
+                test: async () => {
+                    if ('serviceWorker' in navigator) {
+                        try {
+                            const registration = await navigator.serviceWorker.getRegistration();
+                            return {
+                                pass: !!registration,
+                                details: registration 
+                                    ? `Registered: ${registration.scope}` 
+                                    : 'Service worker not registered'
+                            };
+                        } catch (error) {
+                            return {
+                                pass: false,
+                                details: `Error: ${error.message}`
+                            };
+                        }
+                    }
+                    return {
+                        pass: false,
+                        details: 'Service Worker not supported'
+                    };
+                }
+            },
+            {
+                id: 'compression-function',
+                title: '5. Image Compression Function Check',
+                test: () => {
+                    return {
+                        pass: typeof ensureUnder2MB === 'function',
+                        details: typeof ensureUnder2MB === 'function' 
+                            ? 'ensureUnder2MB function exists' 
+                            : 'ensureUnder2MB function not found'
+                    };
+                }
+            },
+            {
+                id: 'clear-all-function',
+                title: '6. Clear All Contacts Function Check',
+                test: () => {
+                    return {
+                        pass: typeof handleClearAllContacts === 'function',
+                        details: typeof handleClearAllContacts === 'function' 
+                            ? 'handleClearAllContacts function exists' 
+                            : 'handleClearAllContacts function not found'
+                    };
+                }
+            },
+            {
+                id: 'ocr-init',
+                title: '7. OCR Initialization Check',
+                test: () => {
+                    return {
+                        pass: typeof ocrProcessor !== 'undefined',
+                        details: typeof ocrProcessor !== 'undefined' 
+                            ? 'ocrProcessor module loaded' 
+                            : 'ocrProcessor not found'
+                    };
+                }
+            },
+            {
+                id: 'cache-files',
+                title: '8. Cache Files Check',
+                test: async () => {
+                    try {
+                        const cache = await caches.open('business-card-scanner-v1');
+                        const keys = await cache.keys();
+                        const urls = keys.map(k => k.url);
+                        
+                        const hasWorker = urls.some(u => u.includes('worker.min.js'));
+                        const hasCore = urls.some(u => u.includes('tesseract-core.wasm.js'));
+                        const hasLang = urls.some(u => u.includes('en.traineddata'));
+                        
+                        return {
+                            pass: hasWorker && hasCore && hasLang,
+                            details: `Cached: ${keys.length} files. Worker: ${hasWorker}, Core: ${hasCore}, Lang: ${hasLang}`
+                        };
+                    } catch (error) {
+                        return {
+                            pass: false,
+                            details: `Cache check failed: ${error.message}`
+                        };
+                    }
+                }
+            }
+        ];
+
+        function renderTest(test, result) {
+            const div = document.createElement('div');
+            div.className = `test-item ${result.pass ? 'pass' : 'fail'}`;
+            div.innerHTML = `
+                <div class="test-title">
+                    ${test.title}
+                    <span class="status ${result.pass ? 'pass' : 'fail'}">${result.pass ? 'PASS' : 'FAIL'}</span>
+                </div>
+                <div class="test-details">${result.details}</div>
+            `;
+            return div;
+        }
+
+        async function runAllTests() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Running tests...</p>';
+
+            const results = [];
+            for (const test of tests) {
+                try {
+                    const result = await test.test();
+                    results.push({ test, result });
+                } catch (error) {
+                    results.push({ 
+                        test, 
+                        result: { 
+                            pass: false, 
+                            details: `Error: ${error.message}` 
+                        } 
+                    });
+                }
+            }
+
+            resultsDiv.innerHTML = '';
+            results.forEach(({ test, result }) => {
+                resultsDiv.appendChild(renderTest(test, result));
+            });
+
+            const passed = results.filter(r => r.result.pass).length;
+            const total = results.length;
+            
+            const summary = document.createElement('div');
+            summary.style.marginTop = '20px';
+            summary.style.padding = '15px';
+            summary.style.background = passed === total ? '#d1fae5' : '#fee2e2';
+            summary.style.borderRadius = '5px';
+            summary.innerHTML = `<strong>Summary: ${passed}/${total} tests passed</strong>`;
+            resultsDiv.appendChild(summary);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // Auto-run on load if on validation page
+        if (window.location.pathname.includes('validation')) {
+            window.addEventListener('load', () => {
+                setTimeout(runAllTests, 1000);
+            });
+        }
+    </script>
+</body>
+</html>
+

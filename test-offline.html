@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Test - Business Card Scanner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover { background: #2563eb; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        canvas { border: 1px solid #ccc; margin: 10px 0; max-width: 100%; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Offline Functionality Test</h1>
+    
+    <div class="test-card">
+        <h2>1. Service Worker Status</h2>
+        <div id="swStatus"></div>
+        <button onclick="checkServiceWorker()">Check Service Worker</button>
+    </div>
+
+    <div class="test-card">
+        <h2>2. Library Loading Test</h2>
+        <div id="libraryStatus"></div>
+        <button onclick="checkLibraries()">Check Libraries</button>
+    </div>
+
+    <div class="test-card">
+        <h2>3. QR Code Detection Test</h2>
+        <p>Upload an image with a QR code (vCard format) to test detection:</p>
+        <input type="file" id="qrFileInput" accept="image/*">
+        <div id="qrResult"></div>
+        <canvas id="qrCanvas" width="300" height="300"></canvas>
+    </div>
+
+    <div class="test-card">
+        <h2>4. OCR Test</h2>
+        <p>Upload a business card image to test OCR extraction:</p>
+        <input type="file" id="ocrFileInput" accept="image/*">
+        <div id="ocrResult"></div>
+        <div id="ocrProgress"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>5. Offline Mode Test</h2>
+        <p>After testing above, simulate offline mode:</p>
+        <button onclick="simulateOffline()">Simulate Offline</button>
+        <button onclick="testOffline()">Test Functionality Offline</button>
+        <div id="offlineResult"></div>
+    </div>
+
+    <!-- Load dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    
+    <!-- Load application modules -->
+    <script src="contacts.js"></script>
+    <script src="vcard.js"></script>
+    <script src="qr.js"></script>
+    <script src="ocr.js"></script>
+    <script src="share.js"></script>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            document.getElementById(elementId).appendChild(div);
+        }
+
+        function clear(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        async function checkServiceWorker() {
+            clear('swStatus');
+            
+            if ('serviceWorker' in navigator) {
+                log('swStatus', '✓ Service Worker API available', 'success');
+                
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        log('swStatus', `✓ Service Worker registered (${registration.scope})`, 'success');
+                        log('swStatus', `Active: ${registration.active ? 'Yes' : 'No'}`, 'info');
+                    } else {
+                        log('swStatus', '⚠ Service Worker not yet registered', 'warning');
+                    }
+                } catch (error) {
+                    log('swStatus', `✗ Error: ${error.message}`, 'error');
+                }
+            } else {
+                log('swStatus', '✗ Service Worker not supported', 'error');
+            }
+        }
+
+        function checkLibraries() {
+            clear('libraryStatus');
+            
+            const libraries = {
+                'Tesseract.js': typeof Tesseract !== 'undefined',
+                'jsQR': typeof jsQR !== 'undefined',
+                'contactManager': typeof contactManager !== 'undefined',
+                'vCardHandler': typeof vCardHandler !== 'undefined',
+                'qrDetector': typeof qrDetector !== 'undefined',
+                'ocrProcessor': typeof ocrProcessor !== 'undefined',
+                'shareHandler': typeof shareHandler !== 'undefined'
+            };
+
+            let allOk = true;
+            for (const [name, loaded] of Object.entries(libraries)) {
+                if (loaded) {
+                    log('libraryStatus', `✓ ${name} loaded`, 'success');
+                } else {
+                    log('libraryStatus', `✗ ${name} NOT loaded`, 'error');
+                    allOk = false;
+                }
+            }
+
+            if (allOk) {
+                log('libraryStatus', '✓ All libraries loaded successfully!', 'success');
+            }
+        }
+
+        // QR Code Test
+        document.getElementById('qrFileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            clear('qrResult');
+            log('qrResult', 'Processing QR code...', 'info');
+
+            try {
+                // Create preview
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.getElementById('qrCanvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                    };
+                };
+                reader.readAsDataURL(file);
+
+                // Detect QR code
+                const qrContact = await qrDetector.detectAndParseVCard(file);
+                
+                if (qrContact && qrContact.name) {
+                    log('qrResult', '✓ QR Code detected and parsed!', 'success');
+                    log('qrResult', `Name: ${qrContact.name}`, 'info');
+                    log('qrResult', `Phone: ${qrContact.phone || 'N/A'}`, 'info');
+                    log('qrResult', `Email: ${qrContact.email || 'N/A'}`, 'info');
+                    log('qrResult', `Company: ${qrContact.company || 'N/A'}`, 'info');
+                } else {
+                    // Try basic detection
+                    const hasQR = await qrDetector.hasQRCode(file);
+                    if (hasQR) {
+                        log('qrResult', '⚠ QR code detected but not in vCard format', 'warning');
+                    } else {
+                        log('qrResult', '✗ No QR code found in image', 'error');
+                    }
+                }
+            } catch (error) {
+                log('qrResult', `✗ Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        });
+
+        // OCR Test
+        document.getElementById('ocrFileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            clear('ocrResult');
+            clear('ocrProgress');
+            log('ocrProgress', 'Initializing OCR (first run may download models)...', 'info');
+
+            try {
+                const result = await ocrProcessor.processImage(file);
+                
+                log('ocrResult', '✓ OCR processing complete!', 'success');
+                log('ocrResult', `Name: ${result.name || 'Not found'}`, result.name ? 'success' : 'warning');
+                log('ocrResult', `Phone: ${result.phone || 'Not found'}`, result.phone ? 'success' : 'warning');
+                log('ocrResult', `Email: ${result.email || 'Not found'}`, result.email ? 'success' : 'warning');
+                log('ocrResult', `Company: ${result.company || 'Not found'}`, result.company ? 'success' : 'warning');
+                
+                clear('ocrProgress');
+            } catch (error) {
+                log('ocrResult', `✗ Error: ${error.message}`, 'error');
+                clear('ocrProgress');
+                console.error(error);
+            }
+        });
+
+        function simulateOffline() {
+            clear('offlineResult');
+            log('offlineResult', 'To test offline:', 'info');
+            log('offlineResult', '1. Open Chrome DevTools (F12)', 'info');
+            log('offlineResult', '2. Go to Network tab', 'info');
+            log('offlineResult', '3. Check "Offline" checkbox', 'info');
+            log('offlineResult', '4. Try uploading an image', 'info');
+            log('offlineResult', 'Note: OCR/QR should work if libraries were cached', 'info');
+        }
+
+        async function testOffline() {
+            clear('offlineResult');
+            
+            // Check if we're actually offline
+            if (!navigator.onLine) {
+                log('offlineResult', '✓ Browser reports offline', 'success');
+            } else {
+                log('offlineResult', '⚠ Browser reports online. Use DevTools to simulate offline.', 'warning');
+            }
+
+            // Test if libraries are available
+            if (typeof Tesseract !== 'undefined' && typeof jsQR !== 'undefined') {
+                log('offlineResult', '✓ Libraries loaded in memory', 'success');
+                log('offlineResult', '✓ OCR and QR detection should work offline', 'success');
+            } else {
+                log('offlineResult', '✗ Libraries not loaded', 'error');
+            }
+        }
+
+        // Run initial checks
+        window.onload = () => {
+            checkServiceWorker();
+            checkLibraries();
+        };
+    </script>
+</body>
+</html>
+

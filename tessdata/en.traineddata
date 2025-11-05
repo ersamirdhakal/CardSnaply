@@ -1,0 +1,12 @@
+PLACEHOLDER FILE - Replace with real en.traineddata
+
+This is a placeholder file. Replace it with the actual Tesseract 4 compatible English language data file.
+
+Download from: https://tessdata.projectnaptha.com/4.0.0/eng.traineddata.gz
+Extract and rename to: en.traineddata (or use eng.traineddata if using 'eng' language code)
+
+File size should be approximately 4-5 MB when extracted.
+
+Note: The OCR code uses 'eng' language code which expects eng.traineddata by default.
+If you want to use this file as en.traineddata, you may need to update ocr.js to use 'en' language code.
+
