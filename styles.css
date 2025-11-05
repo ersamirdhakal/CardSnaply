@@ -1,0 +1,116 @@
+/**
+ * Custom Styles for Business Card Scanner
+ * Complements Tailwind CSS with additional customizations
+ */
+
+/* Smooth transitions */
+* {
+    transition-property: color, background-color, border-color, opacity;
+    transition-duration: 150ms;
+    transition-timing-function: ease-in-out;
+}
+
+/* Focus styles for accessibility */
+input:focus,
+select:focus,
+button:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.dark ::-webkit-scrollbar-track {
+    background: #1f2937;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #4b5563;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+/* Loading animation */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Image preview styling */
+#previewImg {
+    max-height: 400px;
+    object-fit: contain;
+}
+
+/* Contact card hover effect */
+.contact-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.contact-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    /* Stack buttons vertically on mobile */
+    .flex-wrap {
+        flex-direction: column;
+    }
+    
+    .flex-wrap button {
+        width: 100%;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none;
+    }
+}
+
+/* PWA install prompt styling */
+.pwa-install-prompt {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-width: 90%;
+}
+

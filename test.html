@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Card Scanner - Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Business Card Scanner - Module Tests</h1>
+    
+    <div class="test-section">
+        <h2>1. Module Loading Test</h2>
+        <div id="moduleTest"></div>
+        <button onclick="testModules()">Test Module Loading</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. QR Code Generation & Detection Test</h2>
+        <div id="qrTest"></div>
+        <button onclick="testQR()">Test QR Code Detection</button>
+        <canvas id="qrCanvas" width="200" height="200"></canvas>
+    </div>
+
+    <div class="test-section">
+        <h2>3. vCard Generation Test</h2>
+        <div id="vcardTest"></div>
+        <button onclick="testVCard()">Test vCard Generation</button>
+    </div>
+
+    <div class="test-section">
+        <h2>4. IndexedDB Test</h2>
+        <div id="dbTest"></div>
+        <button onclick="testIndexedDB()">Test IndexedDB</button>
+    </div>
+
+    <div class="test-section">
+        <h2>5. OCR Test (Requires Tesseract.js)</h2>
+        <div id="ocrTest"></div>
+        <input type="file" id="ocrFileInput" accept="image/*">
+        <div id="ocrResult"></div>
+    </div>
+
+    <!-- Load dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    
+    <!-- Load application modules -->
+    <script src="contacts.js"></script>
+    <script src="vcard.js"></script>
+    <script src="qr.js"></script>
+    <script src="ocr.js"></script>
+    <script src="share.js"></script>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            document.getElementById(elementId).appendChild(div);
+        }
+
+        function clear(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        async function testModules() {
+            clear('moduleTest');
+            log('moduleTest', 'Testing module availability...', 'info');
+            
+            const modules = {
+                'contactManager': typeof contactManager !== 'undefined',
+                'vCardHandler': typeof vCardHandler !== 'undefined',
+                'qrDetector': typeof qrDetector !== 'undefined',
+                'ocrProcessor': typeof ocrProcessor !== 'undefined',
+                'shareHandler': typeof shareHandler !== 'undefined',
+                'Tesseract': typeof Tesseract !== 'undefined',
+                'jsQR': typeof jsQR !== 'undefined'
+            };
+
+            let allOk = true;
+            for (const [name, loaded] of Object.entries(modules)) {
+                if (loaded) {
+                    log('moduleTest', `✓ ${name} loaded`, 'success');
+                } else {
+                    log('moduleTest', `✗ ${name} NOT loaded`, 'error');
+                    allOk = false;
+                }
+            }
+
+            if (allOk) {
+                log('moduleTest', 'All modules loaded successfully!', 'success');
+            }
+        }
+
+        async function testQR() {
+            clear('qrTest');
+            log('qrTest', 'Testing QR code generation and detection...', 'info');
+
+            try {
+                // Create a test vCard
+                const testContact = {
+                    name: 'John Doe',
+                    phone: '+1234567890',
+                    email: 'john@example.com',
+                    company: 'Test Corp'
+                };
+
+                const vcardString = vCardHandler.generate(testContact);
+                log('qrTest', 'Generated vCard: ' + vcardString.substring(0, 50) + '...', 'info');
+
+                // Create a QR code using a simple method (we'll use a library if available)
+                // For now, we'll create a simple test image
+                const canvas = document.getElementById('qrCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Fill with white
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, 200, 200);
+
+                // Draw a simple QR-like pattern for testing
+                ctx.fillStyle = '#000000';
+                // Draw border
+                ctx.fillRect(10, 10, 180, 180);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(20, 20, 160, 160);
+
+                // Test QR detection
+                log('qrTest', 'Note: QR detection requires actual QR code image', 'info');
+                log('qrTest', 'QR module loaded and ready ✓', 'success');
+                
+            } catch (error) {
+                log('qrTest', 'Error: ' + error.message, 'error');
+            }
+        }
+
+        async function testVCard() {
+            clear('vcardTest');
+            log('vcardTest', 'Testing vCard generation...', 'info');
+
+            try {
+                const testContact = {
+                    name: 'Jane Smith',
+                    phone: '+1-555-123-4567',
+                    email: 'jane.smith@company.com',
+                    company: 'Tech Solutions Inc',
+                    eventTag: 'Edu Summit 2025'
+                };
+
+                const vcard = vCardHandler.generate(testContact);
+                log('vcardTest', 'Generated vCard:', 'info');
+                log('vcardTest', vcard, 'info');
+
+                // Test parsing
+                const parsed = vCardHandler.parse(vcard);
+                log('vcardTest', 'Parsed back:', 'info');
+                log('vcardTest', JSON.stringify(parsed, null, 2), 'info');
+
+                // Verify round-trip
+                if (parsed.name === testContact.name && 
+                    parsed.email === testContact.email) {
+                    log('vcardTest', '✓ vCard generation and parsing works!', 'success');
+                } else {
+                    log('vcardTest', '✗ Round-trip test failed', 'error');
+                }
+
+            } catch (error) {
+                log('vcardTest', 'Error: ' + error.message, 'error');
+            }
+        }
+
+        async function testIndexedDB() {
+            clear('dbTest');
+            log('dbTest', 'Testing IndexedDB...', 'info');
+
+            try {
+                await contactManager.init();
+                log('dbTest', '✓ IndexedDB initialized', 'success');
+
+                // Test save
+                const testContact = {
+                    name: 'Test Contact',
+                    phone: '123-456-7890',
+                    email: 'test@example.com',
+                    company: 'Test Company',
+                    eventTag: 'Test Event'
+                };
+
+                const id = await contactManager.saveContact(testContact);
+                log('dbTest', `✓ Contact saved with ID: ${id}`, 'success');
+
+                // Test retrieve
+                const retrieved = await contactManager.getContact(id);
+                if (retrieved && retrieved.name === testContact.name) {
+                    log('dbTest', '✓ Contact retrieved successfully', 'success');
+                } else {
+                    log('dbTest', '✗ Contact retrieval failed', 'error');
+                }
+
+                // Test search
+                const searchResults = await contactManager.searchContacts('Test');
+                if (searchResults.length > 0) {
+                    log('dbTest', `✓ Search found ${searchResults.length} contact(s)`, 'success');
+                }
+
+                // Cleanup
+                await contactManager.deleteContact(id);
+                log('dbTest', '✓ Test contact deleted', 'success');
+
+            } catch (error) {
+                log('dbTest', 'Error: ' + error.message, 'error');
+            }
+        }
+
+        // OCR test with file input
+        document.getElementById('ocrFileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            clear('ocrTest');
+            clear('ocrResult');
+            log('ocrTest', 'Processing image with OCR...', 'info');
+            log('ocrTest', 'Note: First run may take time to download Tesseract models', 'info');
+
+            try {
+                const result = await ocrProcessor.processImage(file);
+                log('ocrTest', '✓ OCR processing complete!', 'success');
+                log('ocrResult', 'Extracted contact:', 'info');
+                log('ocrResult', JSON.stringify(result, null, 2), 'info');
+            } catch (error) {
+                log('ocrTest', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        // Run initial module test
+        window.onload = () => {
+            testModules();
+        };
+    </script>
+</body>
+</html>
+

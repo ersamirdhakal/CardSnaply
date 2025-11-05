@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="100% Offline Business Card Scanner - Extract contacts using OCR and QR codes">
+    <meta name="theme-color" content="#3b82f6">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' };
+    </script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <title>Business Card Scanner</title>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 transition-colors">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="text-center mb-8 relative">
+            <div class="absolute top-0 right-0">
+                <button id="themeToggle" class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <span id="themeIcon">🌙</span>
+                </button>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-2">📇 Business Card Scanner</h1>
+            <p class="text-gray-600 dark:text-gray-400">100% Offline • OCR • QR Codes • Contact Management</p>
+        </header>
+
+        <!-- Batch Mode Toggle -->
+        <div class="mb-6 flex justify-center">
+            <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="checkbox" id="batchMode" class="w-5 h-5 text-blue-600 rounded">
+                <span class="text-gray-700 dark:text-gray-300 font-medium">Batch Mode (Multiple Cards)</span>
+            </label>
+        </div>
+
+        <!-- Main Card Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+            <!-- Upload/Capture Section -->
+            <div class="mb-6">
+                <label for="fileInput" class="block">
+                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
+                        <div class="text-4xl mb-2">📸</div>
+                        <div class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1">Capture or Upload Card</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Click to select image or use camera</div>
+                        <input type="file" id="fileInput" accept="image/*" capture="environment" class="hidden" multiple>
+                    </div>
+                </label>
+                
+                <!-- Camera Button (Mobile) -->
+                <button id="cameraBtn" class="mt-4 w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    📷 Open Camera
+                </button>
+            </div>
+
+            <!-- Image Preview -->
+            <div id="imagePreview" class="hidden mb-6">
+                <div class="relative">
+                    <img id="previewImg" src="" alt="Card preview" class="max-w-full h-auto rounded-lg border border-gray-300 dark:border-gray-600">
+                    <!-- Compression Badge -->
+                    <div id="compressionBadge" class="hidden absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full shadow-lg">
+                        ⚡ Compressed for speed
+                    </div>
+                </div>
+            </div>
+
+            <!-- Batch Progress -->
+            <div id="batchProgress" class="hidden mb-6">
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Processing: <span id="batchCurrent">0</span> / <span id="batchTotal">0</span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div id="batchProgressBar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <form id="contactForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name *</label>
+                    <input type="text" id="nameInput" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+                    <input type="tel" id="phoneInput" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                    <input type="email" id="emailInput" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company</label>
+                    <input type="text" id="companyInput" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Event Tag</label>
+                    <input type="text" id="eventTagInput" placeholder="e.g., Edu Summit 2025" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap gap-3 pt-4">
+                    <button type="submit" id="saveBtn" class="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+                        💾 Save Contact
+                    </button>
+                    <button type="button" id="shareWhatsAppBtn" class="flex-1 bg-green-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-600 transition-colors flex items-center justify-center gap-2">
+                        📱 Share via WhatsApp
+                    </button>
+                    <button type="button" id="shareEmailBtn" class="flex-1 bg-blue-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-600 transition-colors flex items-center justify-center gap-2">
+                        📧 Share via Email
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Batch Review Section -->
+        <div id="batchReviewSection" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Review Batch Results</h2>
+                <button onclick="hideBatchReview()" class="px-4 py-2 bg-gray-500 text-white text-sm rounded hover:bg-gray-600 transition-colors">
+                    Cancel
+                </button>
+            </div>
+            <div id="batchReviewList" class="space-y-4 mb-4 max-h-96 overflow-y-auto">
+                <!-- Batch review cards will be rendered here -->
+            </div>
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button id="btnSaveAllBatch" onclick="saveAllBatchContacts()" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    💾 Save All Contacts
+                </button>
+            </div>
+        </div>
+
+        <!-- Saved Contacts Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Saved Contacts</h2>
+                    <button id="btnClearAll" class="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition-colors font-medium">
+                        🗑️ Clear All
+                    </button>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="searchInput" placeholder="Search..." class="px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg text-sm">
+                    <select id="eventFilter" class="px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg text-sm">
+                        <option value="">All Events</option>
+                    </select>
+                </div>
+            </div>
+            <div id="contactsList" class="space-y-2">
+                <div class="text-center text-gray-500 dark:text-gray-400 py-8">No contacts saved yet</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm mx-4">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <div id="loadingText" class="text-gray-700 dark:text-gray-300 font-medium">Processing image...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden fixed bottom-4 right-4 bg-gray-800 dark:bg-gray-700 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out opacity-0 -translate-y-2">
+        <div class="flex items-center gap-2">
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Tesseract.js v4 for OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    
+    <!-- jsQR for QR code detection -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    
+    <!-- Application Modules -->
+    <script src="contacts.js"></script>
+    <script src="vcard.js"></script>
+    <script src="qr.js"></script>
+    <script src="ocr.js"></script>
+    <script src="share.js"></script>
+    <script src="tesseract-downloader.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
+
