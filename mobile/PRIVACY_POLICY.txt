@@ -1,0 +1,31 @@
+Privacy Policy for CardSnaply
+
+Last updated: 18 November 2025
+
+CardSnaply is a business card scanning app. This app uses your device camera to scan business cards and extract contact details for you.
+
+1. Information We Collect
+- Camera images: When you scan a card, the app uses the camera to capture an image of the card.
+- Contact details: The app reads text from the card (such as name, phone, email) and shows it to you so you can save it to your contacts.
+
+2. How We Use Your Information
+- We only use the camera image to read the text on the card and fill the fields in the app.
+- The contact details are only used to create or update contacts on your device.
+
+3. Data Storage and Sharing
+- We do not sell your data.
+- We do not share your contact details with third parties.
+- The processing is only for helping you manage your own contacts.
+
+4. Permissions
+- Camera: Used only to scan business cards.
+- Storage/Photos (if requested): Used only if you choose an existing photo of a card from your gallery.
+
+5. Children’s Privacy
+CardSnaply is not designed for children under 13.
+
+6. Contact
+If you have questions about this Privacy Policy, you can contact us at:
+Email: wapnepal.com.np@gmail.com
+
+By using CardSnaply, you agree to this Privacy Policy.
