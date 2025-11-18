@@ -1,0 +1,79 @@
+{
+  "expo": {
+    "name": "CardSnaply",
+    "slug": "cardsnaply",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cardsnaply.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "CardSnaply uses the camera to scan business cards.",
+        "NSPhotoLibraryUsageDescription": "CardSnaply needs photo library access to import business card images.",
+        "NSContactsUsageDescription": "CardSnaply needs contacts access to save scanned business cards to your address book.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.cardsnaply",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "CardSnaply needs access to your photos to import business card images."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermissionText": "CardSnaply uses the camera to scan business cards."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 24,
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35
+          },
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7c682eb4-25a8-41fc-8d85-4c05d883b9aa"
+      }
+    },
+    "owner": "frankboee"
+  }
+}
