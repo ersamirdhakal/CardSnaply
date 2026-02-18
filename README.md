@@ -1,6 +1,7 @@
 # Business Card Scanner
 
 A 100% offline, cross-platform business card scanner application that extracts contact information using OCR and QR code detection.
+Live demo: https://ersamirdhakal.github.io/CardSnaply/
 
 ## Features
 
